@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      handouts: {
+        Row: {
+          course_code: string
+          course_title: string | null
+          created_at: string
+          file_path: string
+          id: string
+          level: string
+        }
+        Insert: {
+          course_code: string
+          course_title?: string | null
+          created_at?: string
+          file_path: string
+          id?: string
+          level: string
+        }
+        Update: {
+          course_code?: string
+          course_title?: string | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          level?: string
+        }
+        Relationships: []
+      }
+      observations: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
