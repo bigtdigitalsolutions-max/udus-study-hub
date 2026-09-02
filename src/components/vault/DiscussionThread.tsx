@@ -25,7 +25,7 @@ export function DiscussionThread({ course }: { course: Course }) {
       ...prev,
       {
         id: `${Date.now()}`,
-        initial: INITIALS[Math.floor(Math.random() * INITIALS.length)],
+        initial: INITIALS[Math.floor(Math.random() * INITIALS.length)] ?? "A",
         body,
         at: Date.now(),
       },

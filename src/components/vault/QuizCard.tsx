@@ -6,8 +6,8 @@ export function QuizCard({ course, onClose }: { course: Course; onClose: () => v
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
-  if (quiz.length === 0) return null;
   const card = quiz[index];
+  if (!card) return null;
 
   const next = () => {
     setRevealed(false);
