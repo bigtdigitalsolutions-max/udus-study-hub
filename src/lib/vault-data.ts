@@ -1,4 +1,4 @@
-export type Level = "100L" | "200L" | "300L" | "400L";
+export type Level = "100L" | "200L" | "300L" | "400L" | "500L";
 
 export type QuizQuestion = {
   question: string;
@@ -17,7 +17,7 @@ export type Course = {
   quiz?: QuizQuestion[];
 };
 
-export const LEVELS: Level[] = ["100L", "200L", "300L", "400L"];
+export const LEVELS: Level[] = ["100L", "200L", "300L", "400L", "500L"];
 
 export const COURSES: Course[] = [
   {
@@ -211,6 +211,51 @@ export const COURSES: Course[] = [
     ],
     seedThread: [
       { initial: "O", body: "Cite the sections. Answers without statute references lose half the marks.", ago: "12h" },
+    ],
+  },
+  {
+    id: "med501",
+    code: "MED 501",
+    title: "Clinical Pharmacology",
+    level: "500L",
+    units: 4,
+    handouts: 15,
+    pages: [
+      "Module 2 — Pharmacokinetics. Absorption, distribution, metabolism and excretion set the dosing interval; half-life predicts steady state after roughly five half-lives.",
+      "Module 5 — Adverse drug reactions. Classify as dose-dependent (Type A) or idiosyncratic (Type B), and always document suspected reactions.",
+    ],
+    seedThread: [
+      { initial: "A", body: "Past questions repeat the drug interaction table — memorise the CYP450 inducers.", ago: "6h" },
+    ],
+  },
+  {
+    id: "eng502",
+    code: "ENG 502",
+    title: "Project Design & Management",
+    level: "500L",
+    units: 3,
+    handouts: 9,
+    pages: [
+      "Chapter 1 — Project scoping. Define deliverables, constraints and acceptance criteria before drawing a single schematic.",
+      "Chapter 4 — Scheduling. Critical path analysis exposes the tasks whose delay slips the entire final-year project.",
+    ],
+    seedThread: [
+      { initial: "S", body: "Supervisor allocation opens early — send your proposal draft first week.", ago: "2d" },
+    ],
+  },
+  {
+    id: "law501",
+    code: "LAW 501",
+    title: "Advanced Jurisprudence",
+    level: "500L",
+    units: 3,
+    handouts: 12,
+    pages: [
+      "Part 2 — Legal positivism versus natural law. Hart's rule of recognition against Fuller's inner morality of law.",
+      "Part 6 — Legal realism. Judicial behaviour, policy and social context as determinants of decisions.",
+    ],
+    seedThread: [
+      { initial: "K", body: "Essay questions only — practise structured argument under time.", ago: "1d" },
     ],
   },
 ];

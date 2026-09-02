@@ -13,6 +13,7 @@ import { CourseCard } from "@/components/vault/CourseCard";
 import { QuizCard } from "@/components/vault/QuizCard";
 import { ReadingMode } from "@/components/vault/ReadingMode";
 import { RequestHandout } from "@/components/vault/RequestHandout";
+import { FeedbackModal } from "@/components/vault/FeedbackModal";
 
 const TITLE = "UDUS Study Vault — Course Handouts, Past Questions & Peer Q&A";
 const DESCRIPTION =
@@ -38,6 +39,7 @@ function Dashboard() {
   const [reading, setReading] = useState<Course | null>(null);
   const [quizFor, setQuizFor] = useState<string | null>("gst101");
   const [streak, setStreak] = useLocalState<StreakState>("streak", emptyStreak);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     setStreak((prev) => checkIn(prev));
@@ -73,6 +75,12 @@ function Dashboard() {
               UDUS Portal
             </p>
           </div>
+          <button
+            onClick={() => setFeedbackOpen(true)}
+            className="ml-auto shrink-0 rounded-full px-3 py-2 font-mono text-[11px] text-cream/80 ring-1 ring-cream/20"
+          >
+            Feedback
+          </button>
         </header>
 
         <div className="mt-4 flex items-center gap-2 rounded-2xl bg-ink/40 px-3 py-3 ring-1 ring-cream/15 backdrop-blur-sm">
@@ -86,7 +94,7 @@ function Dashboard() {
           />
         </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
           {LEVELS.map((l) => (
             <button
               key={l}
@@ -96,8 +104,8 @@ function Dashboard() {
               }}
               className={
                 l === level && !query
-                  ? "glossy rounded-full px-4 py-2 font-mono text-[12px] font-bold text-ink"
-                  : "rounded-full px-4 py-2 font-mono text-[12px] text-cream/70 ring-1 ring-cream/15"
+                  ? "glossy shrink-0 rounded-full px-4 py-2 font-mono text-[12px] font-bold text-ink"
+                  : "shrink-0 rounded-full px-4 py-2 font-mono text-[12px] text-cream/70 ring-1 ring-cream/15"
               }
             >
               {l}
@@ -128,6 +136,7 @@ function Dashboard() {
       </div>
 
       <RequestHandout />
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
 
       <footer className="relative z-10 pb-6 text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55">
