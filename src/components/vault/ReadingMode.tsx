@@ -50,17 +50,20 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -rotate-[18deg] overflow-hidden p-4 opacity-[0.09]"
+          className="pointer-events-none absolute inset-0 grid -rotate-[18deg] place-items-center overflow-hidden opacity-[0.08]"
         >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <p
-              key={i}
-              className="mt-14 whitespace-nowrap font-display text-[40px] font-extrabold leading-none text-ink"
-            >
-              UDUS Study Vault
-            </p>
-          ))}
+          <div>
+            {[0, 1, 2, 3].map((i) => (
+              <p
+                key={i}
+                className="mt-10 whitespace-nowrap font-display text-[24px] font-extrabold leading-none text-ink"
+              >
+                UDUS Study Vault · UDUS Study Vault
+              </p>
+            ))}
+          </div>
         </div>
+
 
         <div className="relative">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
