@@ -1,24 +1,149 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { COURSES, LEVELS, type Course, type Level } from "@/lib/vault-data";
+import {
+  checkIn,
+  emptyStreak,
+  lastSevenDays,
+  useLocalState,
+  type StreakState,
+} from "@/lib/vault-storage";
+import { StreakTracker } from "@/components/vault/StreakTracker";
+import { CourseCard } from "@/components/vault/CourseCard";
+import { QuizCard } from "@/components/vault/QuizCard";
+import { ReadingMode } from "@/components/vault/ReadingMode";
+import { RequestHandout } from "@/components/vault/RequestHandout";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const TITLE = "UDUS Study Vault — Course Handouts, Past Questions & Peer Q&A";
+const DESCRIPTION =
+  "Mobile-first study portal for UDUS students: handouts by level, anonymous course discussions, protected reading mode, GST quick-quizzes and a daily study streak.";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Dashboard,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Dashboard() {
+  const [level, setLevel] = useState<Level>("100L");
+  const [query, setQuery] = useState("");
+  const [reading, setReading] = useState<Course | null>(null);
+  const [quizFor, setQuizFor] = useState<string | null>("gst101");
+  const [streak, setStreak] = useLocalState<StreakState>("streak", emptyStreak);
+
+  useEffect(() => {
+    setStreak((prev) => checkIn(prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const courses = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return COURSES.filter((c) => {
+      const matchesQuery =
+        !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q);
+      return matchesQuery && (q ? true : c.level === level);
+    });
+  }, [query, level]);
+
+  const quizCourse = COURSES.find((c) => c.id === quizFor && c.quiz);
+  const week = lastSevenDays(streak.history);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="dusk-bg absolute inset-0" />
+      <div className="dusk-glow absolute inset-0" />
+      <div className="chrome absolute -bottom-40 left-1/2 size-[460px] -translate-x-1/2 rounded-full opacity-70 blur-[1px]" />
+
+      <div className="relative z-10 px-4 pt-4 pb-28">
+        <header className="flex items-center gap-3">
+          <div className="chrome grid size-11 shrink-0 place-items-center rounded-2xl shadow-lg">
+            <span className="font-display text-lg font-extrabold text-ink">SV</span>
+          </div>
+          <div className="leading-none">
+            <h1 className="font-display text-[19px] font-extrabold tracking-tight">Study Vault</h1>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-cream/70">
+              UDUS Portal
+            </p>
+          </div>
+        </header>
+
+        <div className="mt-4 flex items-center gap-2 rounded-2xl bg-ink/40 px-3 py-3 ring-1 ring-cream/15 backdrop-blur-sm">
+          <span className="font-mono text-sm text-cream/60">⌕</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search course codes"
+            className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-cream/45"
+            placeholder="Search course code — e.g. GST 101"
+          />
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          {LEVELS.map((l) => (
+            <button
+              key={l}
+              onClick={() => {
+                setLevel(l);
+                setQuery("");
+              }}
+              className={
+                l === level && !query
+                  ? "glossy rounded-full px-4 py-2 font-mono text-[12px] font-bold text-ink"
+                  : "rounded-full px-4 py-2 font-mono text-[12px] text-cream/70 ring-1 ring-cream/15"
+              }
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        <StreakTracker streak={streak.streak} minutesToday={streak.minutesToday} week={week} />
+
+        {courses.length === 0 && (
+          <p className="mt-6 font-mono text-[12px] text-cream/60">
+            No course matches “{query}”. Try the handout request button below.
+          </p>
+        )}
+
+        {courses.map((c) => (
+          <div key={c.id}>
+            <CourseCard
+              course={c}
+              onRead={() => setReading(c)}
+              onQuiz={() => setQuizFor(c.id)}
+            />
+            {quizCourse?.id === c.id && (
+              <QuizCard course={quizCourse} onClose={() => setQuizFor(null)} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <RequestHandout />
+
+      <footer className="relative z-10 pb-6 text-center">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55">
+          Powered by BIG T Digital Solutions
+        </p>
+      </footer>
+
+      {reading && (
+        <ReadingMode
+          course={reading}
+          onClose={() => setReading(null)}
+          onRead={() =>
+            setStreak((prev) => ({ ...prev, minutesToday: prev.minutesToday + 5 }))
+          }
+        />
+      )}
     </div>
   );
 }
