@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as X9AdminGateRouteImport } from './routes/x9-admin-gate'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const X9AdminGateRoute = X9AdminGateRouteImport.update({
+  id: '/x9-admin-gate',
+  path: '/x9-admin-gate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/x9-admin-gate': typeof X9AdminGateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/x9-admin-gate': typeof X9AdminGateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/x9-admin-gate': typeof X9AdminGateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/x9-admin-gate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/x9-admin-gate'
+  id: '__root__' | '/' | '/x9-admin-gate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  X9AdminGateRoute: typeof X9AdminGateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/x9-admin-gate': {
+      id: '/x9-admin-gate'
+      path: '/x9-admin-gate'
+      fullPath: '/x9-admin-gate'
+      preLoaderRoute: typeof X9AdminGateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  X9AdminGateRoute: X9AdminGateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

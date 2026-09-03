@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { useLocalState } from "@/lib/vault-storage";
+import { supabase } from "@/integrations/supabase/client";
 
 const CATEGORIES = [
   "Report Missing Pages / Error",
@@ -8,24 +8,28 @@ const CATEGORIES = [
   "General Observation",
 ] as const;
 
-type Feedback = { id: string; category: string; message: string; at: string };
-
 export function FeedbackModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [entries, setEntries] = useLocalState<Feedback[]>("feedback", []);
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (!open) return null;
 
-  const submit = () => {
+  const submit = async () => {
     if (!message.trim()) {
       toast.error("Type a short message first");
       return;
     }
-    setEntries((prev) => [
-      ...prev,
-      { id: `${Date.now()}`, category, message: message.trim(), at: new Date().toISOString() },
-    ]);
+    setSubmitting(true);
+    const { error } = await supabase.from("observations").insert({
+      category,
+      message: message.trim(),
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error("Feedback could not be sent", { description: "Please try again." });
+      return;
+    }
     setMessage("");
     setCategory(CATEGORIES[0]);
     onClose();
@@ -80,12 +84,13 @@ export function FeedbackModal({ open, onClose }: { open: boolean; onClose: () =>
 
         <button
           onClick={submit}
+          disabled={submitting}
           className="glossy mt-3 w-full rounded-2xl py-3 font-mono text-[12px] font-bold text-ink"
         >
-          Submit feedback
+          {submitting ? "Sending…" : "Submit feedback"}
         </button>
         <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/40">
-          {entries.length} note{entries.length === 1 ? "" : "s"} sent from this device
+          No login or identifying details are collected
         </p>
       </div>
     </div>

@@ -5,8 +5,10 @@ import { createHash, timingSafeEqual } from "node:crypto";
 type GateSession = { unlocked?: boolean };
 
 function sessionConfig() {
+  const password = process.env["SESSION_SECRET"];
+  if (!password) throw new Error("Admin session is not configured");
   return {
-    password: process.env["SESSION_SECRET"]!,
+    password,
     name: "udus-admin-gate",
     maxAge: 60 * 60 * 8,
     cookie: { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/" },
