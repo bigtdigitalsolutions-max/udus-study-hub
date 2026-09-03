@@ -42,10 +42,7 @@ export function PdfCanvasViewer({ url }: { url: string }) {
           canvas.style.width = "100%";
           canvas.style.height = "auto";
           canvas.style.display = "block";
-          canvas.style.borderRadius = "12px";
-          canvas.style.marginBottom = "14px";
-          canvas.style.background = "#fff";
-          canvas.className = "no-select";
+          canvas.className = "no-select mb-3 block w-full rounded-xl bg-cream";
 
           const ctx = canvas.getContext("2d");
           if (!ctx) continue;
@@ -56,7 +53,9 @@ export function PdfCanvasViewer({ url }: { url: string }) {
           ctx.globalAlpha = 0.16;
           ctx.translate(canvas.width / 2, canvas.height / 2);
           ctx.rotate(-Math.PI / 7);
-          ctx.fillStyle = "#2b1b3d";
+          ctx.fillStyle = getComputedStyle(document.documentElement)
+            .getPropertyValue("--ink")
+            .trim();
           const size = Math.max(16, canvas.width / 16);
           ctx.font = `800 ${size}px Syne, sans-serif`;
           ctx.textAlign = "center";

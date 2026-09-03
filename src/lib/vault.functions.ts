@@ -1,9 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { Database } from "@/integrations/supabase/types";
 
 /** Public list of available handouts (metadata only, no file access). */
 export const listHandouts = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
+  const { createClient } = await import("@supabase/supabase-js");
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) throw new Error("Handout service is not configured");
+  const publicClient = createClient<Database>(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
+  const { data, error } = await publicClient
     .from("handouts")
     .select("id, course_code, course_title, level, file_path, created_at")
     .order("created_at", { ascending: false });
