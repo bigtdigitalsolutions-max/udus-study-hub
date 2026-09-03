@@ -55,7 +55,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-ink/95 backdrop-blur-sm">
+    <div className="secure-reading-surface fixed inset-0 z-50 flex flex-col bg-ink/95 backdrop-blur-sm">
       <header className="flex items-center justify-between gap-3 px-4 pt-4 pb-3">
         <div className="min-w-0">
            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose">
