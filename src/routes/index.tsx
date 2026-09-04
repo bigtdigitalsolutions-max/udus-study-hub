@@ -14,6 +14,7 @@ import { QuizCard } from "@/components/vault/QuizCard";
 import { ReadingMode } from "@/components/vault/ReadingMode";
 import { RequestHandout } from "@/components/vault/RequestHandout";
 import { FeedbackModal } from "@/components/vault/FeedbackModal";
+import { InstallBanner } from "@/components/vault/InstallBanner";
 
 const TITLE = "UDUS Study Vault — Course Handouts, Past Questions & Peer Q&A";
 const DESCRIPTION =
@@ -137,6 +138,7 @@ function Dashboard() {
 
       <RequestHandout />
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      <InstallBanner />
 
       <footer className="relative z-10 pb-6 text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55">
