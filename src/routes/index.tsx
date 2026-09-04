@@ -140,10 +140,15 @@ function Dashboard() {
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <InstallBanner />
 
-      <footer className="relative z-10 pb-6 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55">
-          Powered by BIG T Digital Solutions
-        </p>
+      <footer className="relative z-10 pb-8 pt-6 text-center">
+        <div className="mx-auto max-w-md rounded-2xl border border-cream/15 bg-plum/40 px-5 py-4 backdrop-blur-sm">
+          <p className="font-display text-sm font-bold uppercase tracking-[0.22em] text-cream">
+            Powered by{" "}
+            <span className="chrome-text bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">
+              BIG T Digital Solutions
+            </span>
+          </p>
+        </div>
       </footer>
 
       {reading && (
