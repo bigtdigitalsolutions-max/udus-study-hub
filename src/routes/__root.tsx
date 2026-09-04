@@ -87,19 +87,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "BIG T Digital Solutions" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-    ],
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "UDUS Study Vault" },
-      {
-        name: "description",
-        content:
-          "Mobile-first academic portal for UDUS students: handouts, past questions and anonymous peer Q&A.",
-      },
-      { name: "author", content: "BIG T Digital Solutions" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#241a2e" },
     ],
     links: [
