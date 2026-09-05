@@ -19,6 +19,7 @@ export type Database = {
           course_code: string
           course_title: string | null
           created_at: string
+          department: string | null
           file_path: string
           id: string
           level: string
@@ -27,6 +28,7 @@ export type Database = {
           course_code: string
           course_title?: string | null
           created_at?: string
+          department?: string | null
           file_path: string
           id?: string
           level: string
@@ -35,6 +37,7 @@ export type Database = {
           course_code?: string
           course_title?: string | null
           created_at?: string
+          department?: string | null
           file_path?: string
           id?: string
           level?: string

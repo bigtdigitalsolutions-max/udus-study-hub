@@ -22,7 +22,7 @@ export const listHandouts = createServerFn({ method: "GET" }).handler(async () =
   });
   const { data, error } = await publicClient
     .from("handouts")
-    .select("id, course_code, course_title, level, file_path, created_at")
+    .select("id, course_code, course_title, level, department, file_path, created_at")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];

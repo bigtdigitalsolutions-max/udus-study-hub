@@ -13,6 +13,7 @@ type Props = {
 export function ReadingMode({ course, onClose, onRead }: Props) {
   const [page, setPage] = useState(0);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfDepartment, setPdfDepartment] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(true);
   const total = course.pages.length;
   const fetchHandouts = useServerFn(listHandouts);
@@ -25,6 +26,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
         const handouts = await fetchHandouts();
         const match = handouts.find((handout) => handout.course_code.toLowerCase() === course.code.toLowerCase());
         if (match) {
+           setPdfDepartment(match.department);
           const signed = await fetchHandoutUrl({ data: { id: match.id } });
           setPdfUrl(signed.url);
         }
@@ -64,6 +66,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
           <h2 className="truncate font-display text-base font-extrabold">
             {course.code} · Handout
           </h2>
+           {pdfDepartment && <p className="mt-1 truncate font-mono text-[10px] text-cream/55">{pdfDepartment}</p>}
         </div>
         <button
           onClick={onClose}
