@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { DEPARTMENTS } from "@/lib/departments";
 import {
   adminDeleteHandout,
   adminListHandouts,
@@ -32,6 +33,7 @@ type Handout = {
   course_code: string;
   course_title: string | null;
   level: string;
+  department: string | null;
   file_path: string;
   created_at: string;
 };
@@ -192,6 +194,10 @@ function AdminGate() {
               <select name="level" defaultValue="100L" className="w-full rounded-xl bg-ink/[0.07] px-3 py-3 text-sm outline-none">
                 {["100L", "200L", "300L", "400L", "500L"].map((level) => <option key={level}>{level}</option>)}
               </select>
+              <select name="department" defaultValue="" required className="w-full rounded-xl bg-ink/[0.07] px-3 py-3 text-sm outline-none">
+                <option value="" disabled>Select department</option>
+                {DEPARTMENTS.map((department) => <option key={department}>{department}</option>)}
+              </select>
               <input name="file" type="file" accept="application/pdf,.pdf" required className="w-full rounded-xl bg-ink/[0.07] px-3 py-3 text-sm" />
             </div>
             <button disabled={busy} className="glossy mt-4 w-full rounded-xl py-3 font-mono text-[12px] font-bold text-ink">
@@ -214,6 +220,7 @@ function AdminGate() {
                   <div className="min-w-0">
                     <p className="font-mono text-[11px] font-bold text-brand">{handout.course_code} · {handout.level}</p>
                     <p className="truncate text-sm">{handout.course_title || "Untitled handout"}</p>
+                    <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{handout.department || "Department not assigned"}</p>
                   </div>
                   <button onClick={() => void deleteHandout(handout.id)} disabled={busy} className="shrink-0 rounded-lg px-2 py-1.5 font-mono text-[10px] text-destructive ring-1 ring-destructive/30">
                     Remove

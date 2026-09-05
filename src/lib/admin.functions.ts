@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { useSession } from "@tanstack/react-start/server";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { DEPARTMENTS } from "@/lib/departments";
 
 type GateSession = { unlocked?: boolean };
 
@@ -66,7 +67,7 @@ export const adminListHandouts = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("handouts")
-    .select("id, course_code, course_title, level, file_path, created_at")
+    .select("id, course_code, course_title, level, department, file_path, created_at")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
@@ -100,10 +101,14 @@ export const adminUploadHandout = createServerFn({ method: "POST" })
     const courseCode = String(data.get("course_code") ?? "").trim();
     const courseTitle = String(data.get("course_title") ?? "").trim();
     const level = String(data.get("level") ?? "").trim();
+    const department = String(data.get("department") ?? "").trim();
 
     if (!(file instanceof File)) throw new Error("Attach a PDF file");
     if (file.type !== "application/pdf") throw new Error("Only PDF files are accepted");
     if (!courseCode) throw new Error("Course code is required");
+    if (!DEPARTMENTS.includes(department as (typeof DEPARTMENTS)[number])) {
+      throw new Error("Pick a valid department");
+    }
     if (!["100L", "200L", "300L", "400L", "500L"].includes(level)) {
       throw new Error("Pick a valid level");
     }
@@ -122,6 +127,7 @@ export const adminUploadHandout = createServerFn({ method: "POST" })
       course_code: courseCode,
       course_title: courseTitle || null,
       level,
+      department,
       file_path: path,
     });
     if (error) throw new Error(error.message);
