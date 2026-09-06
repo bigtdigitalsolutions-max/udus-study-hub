@@ -5,8 +5,19 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  plugins: [
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: null,
+      devOptions: { enabled: false },
+      workbox: {
+        navigateFallbackDenylist: [/^\/~oauth/],
+      },
+    }),
+  ],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

@@ -34,7 +34,6 @@ type Handout = {
   course_title: string | null;
   level: string;
   department: string | null;
-  file_path: string;
   created_at: string;
 };
 
