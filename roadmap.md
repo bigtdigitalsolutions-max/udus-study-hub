@@ -1,0 +1,5 @@
+- [ ] Add generated service-worker support for published-app offline shell behavior
+- [ ] Replace client-visible signed PDF URLs with server-returned document bytes
+- [ ] Cache rendered watermarked pages in IndexedDB and reopen them offline
+- [ ] Harden viewer gestures, selection, print, and export affordances
+- [ ] Verify build and online/offline reader behavior
