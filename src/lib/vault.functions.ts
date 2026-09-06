@@ -22,14 +22,14 @@ export const listHandouts = createServerFn({ method: "GET" }).handler(async () =
   });
   const { data, error } = await publicClient
     .from("handouts")
-    .select("id, course_code, course_title, level, department, file_path, created_at")
+    .select("id, course_code, course_title, level, department, created_at")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
 });
 
-/** Short-lived signed URL so the in-app canvas reader can stream a handout. */
-export const getHandoutUrl = createServerFn({ method: "POST" })
+/** Returns PDF bytes without exposing the private storage path or a signed URL. */
+export const getHandoutDocument = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -39,9 +39,14 @@ export const getHandoutUrl = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
     if (!row?.file_path) throw new Error("Handout not found");
-    const signed = await supabaseAdmin.storage
-      .from("handouts")
-      .createSignedUrl(row.file_path, 60 * 15);
-    if (signed.error) throw new Error(signed.error.message);
-    return { url: signed.data.signedUrl };
+    const downloaded = await supabaseAdmin.storage.from("handouts").download(row.file_path);
+    if (downloaded.error) throw new Error(downloaded.error.message);
+
+    const bytes = new Uint8Array(await downloaded.data.arrayBuffer());
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return { base64: btoa(binary) };
   });

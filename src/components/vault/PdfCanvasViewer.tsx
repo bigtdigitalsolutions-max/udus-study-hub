@@ -1,24 +1,67 @@
 import { useEffect, useRef, useState } from "react";
+import { cacheRenderedPage, getCachedPages, type CachedDocumentPage } from "@/lib/document-cache";
 
 /**
  * Canvas-only PDF renderer. No text layer is created, so there is nothing to
  * select or copy; each page is stamped with a diagonal watermark.
  */
-export function PdfCanvasViewer({ url }: { url: string }) {
+type Props = {
+  documentId: string;
+  courseCode: string;
+  department: string | null;
+  data: Uint8Array | null;
+};
+
+export function PdfCanvasViewer({ documentId, courseCode, department, data }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [pages, setPages] = useState(0);
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
+    const appendCachedPage = async (cached: CachedDocumentPage) => {
+      const host = hostRef.current;
+      if (!host || cancelled) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = cached.width;
+      canvas.height = cached.height;
+      canvas.style.width = "100%";
+      canvas.style.height = "auto";
+      canvas.style.display = "block";
+      canvas.className = "no-select mb-3 block w-full rounded-xl bg-cream";
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      const image = await createImageBitmap(cached.blob);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      image.close();
+      if (!cancelled) host.appendChild(canvas);
+    };
+
     (async () => {
       try {
+        const cached = await getCachedPages(documentId);
+        if (!data && cached.length > 0) {
+          hostRef.current?.replaceChildren();
+          for (const page of cached) await appendCachedPage(page);
+          if (!cancelled) {
+            setPages(cached[0]?.totalPages ?? cached.length);
+            setOffline(true);
+            setStatus("ready");
+          }
+          return;
+        }
+
+        if (!data) throw new Error("No online document data or cached pages");
+
         const pdfjs = await import("pdfjs-dist");
         const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
-        const doc = await pdfjs.getDocument({ url }).promise;
+        const doc = await pdfjs.getDocument({ data }).promise;
         if (cancelled) return;
         setPages(doc.numPages);
 
@@ -66,21 +109,45 @@ export function PdfCanvasViewer({ url }: { url: string }) {
           }
           ctx.restore();
 
+          const rendered = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png"),
+          );
+          if (rendered) {
+            void cacheRenderedPage(documentId, courseCode, department, {
+              page: n,
+              totalPages: doc.numPages,
+              width: canvas.width,
+              height: canvas.height,
+              blob: rendered,
+            });
+          }
+
           if (cancelled) return;
           host.appendChild(canvas);
         }
 
         if (!cancelled) setStatus("ready");
       } catch (error) {
-        console.error(error);
-        if (!cancelled) setStatus("error");
+        const cached = await getCachedPages(documentId);
+        if (cached.length > 0) {
+          hostRef.current?.replaceChildren();
+          for (const page of cached) await appendCachedPage(page);
+          if (!cancelled) {
+            setPages(cached[0]?.totalPages ?? cached.length);
+            setOffline(true);
+            setStatus("ready");
+          }
+        } else {
+          console.error(error);
+          if (!cancelled) setStatus("error");
+        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [courseCode, data, department, documentId]);
 
   return (
     <div>
@@ -95,7 +162,7 @@ export function PdfCanvasViewer({ url }: { url: string }) {
       <div ref={hostRef} className="no-select" />
       {status === "ready" && (
         <p className="pb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/40">
-          {pages} page{pages === 1 ? "" : "s"} · canvas rendered · copy &amp; print blocked
+          {pages} page{pages === 1 ? "" : "s"} · {offline ? "saved for offline reading" : "saved as rendered pages"}
         </p>
       )}
     </div>

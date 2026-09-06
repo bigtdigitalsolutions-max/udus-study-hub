@@ -67,7 +67,7 @@ export const adminListHandouts = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("handouts")
-    .select("id, course_code, course_title, level, department, file_path, created_at")
+    .select("id, course_code, course_title, level, department, created_at")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];

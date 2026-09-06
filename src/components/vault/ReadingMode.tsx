@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { Course } from "@/lib/vault-data";
-import { listHandouts, getHandoutUrl } from "@/lib/vault.functions";
+import { findCachedDocument } from "@/lib/document-cache";
+import { listHandouts, getHandoutDocument } from "@/lib/vault.functions";
 import { PdfCanvasViewer } from "./PdfCanvasViewer";
 
 type Props = {
@@ -12,23 +13,43 @@ type Props = {
 
 export function ReadingMode({ course, onClose, onRead }: Props) {
   const [page, setPage] = useState(0);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfId, setPdfId] = useState<string | null>(null);
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [pdfDepartment, setPdfDepartment] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(true);
   const total = course.pages.length;
   const fetchHandouts = useServerFn(listHandouts);
-  const fetchHandoutUrl = useServerFn(getHandoutUrl);
+  const fetchHandoutDocument = useServerFn(getHandoutDocument);
 
   useEffect(() => {
     onRead();
     void (async () => {
       try {
-        const handouts = await fetchHandouts();
-        const match = handouts.find((handout) => handout.course_code.toLowerCase() === course.code.toLowerCase());
+        let match: { id: string; course_code: string; department: string | null } | null = null;
+        try {
+          const handouts = await fetchHandouts();
+          match = handouts.find(
+            (handout) => handout.course_code.toLowerCase() === course.code.toLowerCase(),
+          ) ?? null;
+        } catch {
+          const cached = await findCachedDocument(course.code);
+          if (cached) {
+            setPdfId(cached.documentId);
+            setPdfDepartment(cached.department);
+          }
+        }
         if (match) {
-           setPdfDepartment(match.department);
-          const signed = await fetchHandoutUrl({ data: { id: match.id } });
-          setPdfUrl(signed.url);
+          setPdfId(match.id);
+          setPdfDepartment(match.department);
+          try {
+            const document = await fetchHandoutDocument({ data: { id: match.id } });
+            const binary = atob(document.base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+            setPdfData(bytes);
+          } catch {
+            // The canvas viewer will reopen the rendered pages from IndexedDB.
+          }
         }
       } catch {
         // The built-in notes remain available when no uploaded PDF is reachable.
@@ -61,7 +82,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
       <header className="flex items-center justify-between gap-3 px-4 pt-4 pb-3">
         <div className="min-w-0">
            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose">
-             {pdfUrl ? "Secure PDF reader" : "Reading mode"}
+             {pdfId ? "Secure canvas reader" : "Reading mode"}
            </p>
           <h2 className="truncate font-display text-base font-extrabold">
             {course.code} · Handout
@@ -80,6 +101,10 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
         className="no-select relative mx-4 flex-1 overflow-y-auto rounded-3xl bg-cream p-4 text-ink"
         onContextMenu={(e) => e.preventDefault()}
         onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        onSelect={(e) => e.preventDefault()}
+        onSelectCapture={(e) => e.preventDefault()}
         onDragStart={(e) => e.preventDefault()}
       >
         <div
@@ -102,8 +127,13 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
          {pdfLoading && (
            <p className="font-mono text-[11px] text-ink/50">Checking for the latest handout…</p>
          )}
-         {pdfUrl ? (
-           <PdfCanvasViewer url={pdfUrl} />
+         {pdfId ? (
+           <PdfCanvasViewer
+             documentId={pdfId}
+             courseCode={course.code}
+             department={pdfDepartment}
+             data={pdfData}
+           />
          ) : (
            <div className="relative">
              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
