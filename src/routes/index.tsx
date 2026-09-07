@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { COURSES, LEVELS, type Course, type Level } from "@/lib/vault-data";
+import { listHandouts } from "@/lib/vault.functions";
 import {
   checkIn,
   emptyStreak,
@@ -15,6 +17,15 @@ import { ReadingMode } from "@/components/vault/ReadingMode";
 import { RequestHandout } from "@/components/vault/RequestHandout";
 import { FeedbackModal } from "@/components/vault/FeedbackModal";
 import { InstallBanner } from "@/components/vault/InstallBanner";
+
+type UploadedHandout = {
+  id: string;
+  course_code: string;
+  course_title: string | null;
+  level: string;
+  department: string | null;
+  created_at: string;
+};
 
 const TITLE = "UDUS Study Vault — Course Handouts, Past Questions & Peer Q&A";
 const DESCRIPTION =
@@ -41,20 +52,61 @@ function Dashboard() {
   const [quizFor, setQuizFor] = useState<string | null>("gst101");
   const [streak, setStreak] = useLocalState<StreakState>("streak", emptyStreak);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [uploadedHandouts, setUploadedHandouts] = useState<UploadedHandout[]>([]);
+  const fetchHandouts = useServerFn(listHandouts);
 
   useEffect(() => {
     setStreak((prev) => checkIn(prev));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    void fetchHandouts()
+      .then((handouts) => {
+        if (active) setUploadedHandouts(handouts);
+      })
+      .catch(() => {
+        // Built-in courses remain available while uploaded metadata is unreachable.
+      });
+    return () => {
+      active = false;
+    };
+  }, [fetchHandouts]);
+
+  const uploadedCourses = useMemo(() => {
+    const builtInCodes = new Set(COURSES.map((course) => course.code.toLowerCase()));
+    const byCode = new Map<string, Course>();
+
+    for (const handout of uploadedHandouts) {
+      const code = handout.course_code.trim();
+      const key = code.toLowerCase();
+      if (!code || builtInCodes.has(key) || byCode.has(key)) continue;
+      if (!LEVELS.includes(handout.level as Level)) continue;
+
+      byCode.set(key, {
+        id: handout.id,
+        code,
+        title: handout.course_title || "Uploaded handout",
+        level: handout.level as Level,
+        units: 0,
+        handouts: 1,
+        pages: ["This secure document opens in the protected canvas reader."],
+        seedThread: [],
+      });
+    }
+
+    return [...byCode.values()];
+  }, [uploadedHandouts]);
+
   const courses = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return COURSES.filter((c) => {
+    return [...COURSES, ...uploadedCourses].filter((c) => {
       const matchesQuery =
         !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q);
       return matchesQuery && (q ? true : c.level === level);
     });
-  }, [query, level]);
+  }, [query, level, uploadedCourses]);
 
   const quizCourse = COURSES.find((c) => c.id === quizFor && c.quiz);
   const week = lastSevenDays(streak.history);

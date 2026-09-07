@@ -29,7 +29,7 @@ export async function registerPublishedAppWorker() {
     const registrations = await navigator.serviceWorker?.getRegistrations();
     await Promise.all(
       (registrations ?? [])
-        .filter((registration) => registration.scope.endsWith("/"))
+        .filter((registration) => registration.active?.scriptURL.endsWith("/sw.js"))
         .map((registration) => registration.unregister()),
     );
     return;

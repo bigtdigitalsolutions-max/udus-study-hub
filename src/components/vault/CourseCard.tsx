@@ -15,7 +15,8 @@ export function CourseCard({ course, onRead, onQuiz }: Props) {
           <p className="font-mono text-[11px] font-bold tracking-wide text-accent">{course.code}</p>
           <h2 className="mt-0.5 font-display text-lg font-extrabold">{course.title}</h2>
           <p className="mt-1 font-mono text-[10px] text-ink/45">
-            {course.units} units · {course.handouts} handouts · {course.level}
+            {course.units > 0 ? `${course.units} units · ` : "Secure upload · "}
+            {course.handouts} handout{course.handouts === 1 ? "" : "s"} · {course.level}
           </p>
         </div>
         {course.quiz && (

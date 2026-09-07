@@ -124,10 +124,9 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
         </div>
 
 
-         {pdfLoading && (
+         {pdfLoading ? (
            <p className="font-mono text-[11px] text-ink/50">Checking for the latest handout…</p>
-         )}
-         {pdfId ? (
+         ) : pdfId ? (
            <PdfCanvasViewer
              documentId={pdfId}
              courseCode={course.code}
@@ -145,7 +144,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
       </div>
 
       <div className="flex items-center justify-between gap-2 px-4 py-4">
-         {!pdfUrl ? (
+         {!pdfId ? (
            <button
              onClick={() => setPage((p) => Math.max(0, p - 1))}
              disabled={page === 0}
@@ -157,7 +156,7 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
         <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/50">
           Copy protected
         </span>
-         {!pdfUrl ? (
+         {!pdfId ? (
            <button
              onClick={() => setPage((p) => Math.min(total - 1, p + 1))}
              disabled={page === total - 1}

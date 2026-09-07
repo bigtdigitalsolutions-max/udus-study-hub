@@ -57,8 +57,8 @@ export function PdfCanvasViewer({ documentId, courseCode, department, data }: Pr
 
         if (!data) throw new Error("No online document data or cached pages");
 
-        const pdfjs = await import("pdfjs-dist");
-        const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+        const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+        const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")).default;
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
         const doc = await pdfjs.getDocument({ data }).promise;
