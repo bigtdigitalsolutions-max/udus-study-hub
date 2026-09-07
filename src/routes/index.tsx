@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { COURSES, LEVELS, type Course, type Level } from "@/lib/vault-data";
+import { listHandouts } from "@/lib/vault.functions";
 import {
   checkIn,
   emptyStreak,
@@ -15,6 +17,15 @@ import { ReadingMode } from "@/components/vault/ReadingMode";
 import { RequestHandout } from "@/components/vault/RequestHandout";
 import { FeedbackModal } from "@/components/vault/FeedbackModal";
 import { InstallBanner } from "@/components/vault/InstallBanner";
+
+type UploadedHandout = {
+  id: string;
+  course_code: string;
+  course_title: string | null;
+  level: string;
+  department: string | null;
+  created_at: string;
+};
 
 const TITLE = "UDUS Study Vault — Course Handouts, Past Questions & Peer Q&A";
 const DESCRIPTION =
