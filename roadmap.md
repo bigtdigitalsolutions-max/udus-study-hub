@@ -1,6 +1,6 @@
-- [ ] Add generated service-worker support for published-app offline shell behavior
-- [ ] Replace client-visible signed PDF URLs with server-returned document bytes
-- [ ] Cache rendered watermarked pages in IndexedDB and reopen them offline
-- [ ] Harden viewer gestures, selection, print, and export affordances
-- [ ] Verify build and online/offline reader behavior
-- [ ] Fix admin upload reset to avoid null form references
+- [x] Add generated service-worker support for published-app offline shell behavior
+- [x] Replace client-visible signed PDF URLs with server-returned document bytes
+- [x] Cache rendered watermarked pages in IndexedDB and reopen them offline
+- [x] Harden viewer gestures, selection, print, and export affordances
+- [x] Verify build and online/offline reader behavior
+- [x] Fix admin upload reset to avoid null form references
