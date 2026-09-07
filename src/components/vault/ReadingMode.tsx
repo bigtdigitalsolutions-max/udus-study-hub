@@ -124,10 +124,9 @@ export function ReadingMode({ course, onClose, onRead }: Props) {
         </div>
 
 
-         {pdfLoading && (
+         {pdfLoading ? (
            <p className="font-mono text-[11px] text-ink/50">Checking for the latest handout…</p>
-         )}
-         {pdfId ? (
+         ) : pdfId ? (
            <PdfCanvasViewer
              documentId={pdfId}
              courseCode={course.code}
