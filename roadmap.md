@@ -3,3 +3,4 @@
 - [ ] Cache rendered watermarked pages in IndexedDB and reopen them offline
 - [ ] Harden viewer gestures, selection, print, and export affordances
 - [ ] Verify build and online/offline reader behavior
+- [ ] Fix admin upload reset to avoid null form references
