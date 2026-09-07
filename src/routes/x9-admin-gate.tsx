@@ -103,10 +103,11 @@ function AdminGate() {
 
   async function submitUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setBusy(true);
     try {
-      await upload({ data: new FormData(event.currentTarget) });
-      event.currentTarget.reset();
+      await upload({ data: new FormData(form) });
+      form?.reset();
       toast.success("Handout uploaded");
       await refresh();
     } catch (error) {
